@@ -1,0 +1,49 @@
+{
+  "languages": [
+    "Python", "Java", "JavaScript", "TypeScript", "C", "C++", "C#", "Go",
+    "Rust", "Kotlin", "Swift", "PHP", "Ruby", "R", "Scala", "SQL", "Bash", "MATLAB"
+  ],
+  "frontend": [
+    "React", "React.js", "ReactJS", "Vue", "Vue.js", "Angular", "Next.js",
+    "Nuxt.js", "Redux", "HTML", "HTML5", "CSS", "CSS3", "Tailwind CSS",
+    "Tailwind", "Bootstrap", "Sass", "Vite", "jQuery", "Webpack"
+  ],
+  "backend": [
+    "Node.js", "NodeJS", "Express", "Express.js", "FastAPI", "Django",
+    "Flask", "Spring", "Spring Boot", "ASP.NET", ".NET", "Ruby on Rails",
+    "Laravel", "GraphQL", "REST API", "RESTful API", "gRPC", "Microservices"
+  ],
+  "databases": [
+    "MongoDB", "PostgreSQL", "MySQL", "SQLite", "Redis", "Cassandra",
+    "DynamoDB", "Firebase", "Firestore", "Elasticsearch", "Oracle DB",
+    "MS SQL Server", "Neo4j"
+  ],
+  "cloud_devops": [
+    "AWS", "Amazon Web Services", "Azure", "GCP", "Google Cloud",
+    "Docker", "Kubernetes", "Jenkins", "CI/CD", "Terraform", "Ansible",
+    "GitHub Actions", "GitLab CI", "Nginx", "Linux", "Vercel", "Render", "Heroku"
+  ],
+  "ai_ml": [
+    "Machine Learning", "Deep Learning", "TensorFlow", "PyTorch",
+    "scikit-learn", "sklearn", "Keras", "NLP", "Natural Language Processing",
+    "Computer Vision", "OpenCV", "Pandas", "NumPy", "spaCy", "NLTK",
+    "Hugging Face", "Transformers", "LLM", "Generative AI", "GenAI",
+    "Sentence Transformers", "OpenAI API", "Gemini API", "LangChain"
+  ],
+  "tools": [
+    "Git", "GitHub", "GitLab", "Jira", "Postman", "VS Code", "IntelliJ",
+    "Figma", "Slack", "Notion", "Docker Compose"
+  ],
+  "concepts": [
+    "Data Structures", "Algorithms", "OOP", "Object-Oriented Programming",
+    "System Design", "Design Patterns", "Agile", "Scrum", "TDD",
+    "Unit Testing", "CI/CD", "Distributed Systems", "OAuth", "JWT",
+    "Authentication", "Authorization", "Idempotency", "Multithreading",
+    "Concurrency", "Data Structures and Algorithms", "DSA"
+  ],
+  "soft_skills": [
+    "Communication", "Leadership", "Teamwork", "Problem Solving",
+    "Time Management", "Collaboration", "Project Management",
+    "Critical Thinking", "Public Speaking", "Mentoring"
+  ]
+}
