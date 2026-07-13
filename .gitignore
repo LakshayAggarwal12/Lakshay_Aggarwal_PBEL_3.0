@@ -9,10 +9,6 @@ env/
 # Environment secrets
 .env
 
-# Database
-*.db
-*.sqlite3
-
 # IDE
 .vscode/
 .idea/

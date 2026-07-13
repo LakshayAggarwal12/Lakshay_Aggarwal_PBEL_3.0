@@ -5,16 +5,20 @@ Deliberately uses a curated taxonomy + spaCy PhraseMatcher instead of raw
 NER. Generic NER models are unreliable at picking "React.js" or "CI/CD" out
 of resume text — a matched vocabulary is far more precise for this domain,
 and it's what production ATS-style tools actually do.
+
+The taxonomy now lives in the database (Skill/SkillCategory tables — see
+app/models/models.py and scripts/seed_skills.py), not a static JSON file.
+Run scripts/seed_skills.py once before extraction will find anything.
 """
-import json
 import re
+import sys
 from functools import lru_cache
-from pathlib import Path
 
 import spacy
 from spacy.matcher import PhraseMatcher
 
-TAXONOMY_PATH = Path(__file__).resolve().parent.parent / "data" / "skills_taxonomy.json"
+from app.database import SessionLocal
+from app.models.models import Skill
 
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 PHONE_RE = re.compile(r"(\+?\d{1,3}[\s-]?)?\(?\d{3,5}\)?[\s-]?\d{3,4}[\s-]?\d{3,4}")
@@ -31,26 +35,31 @@ EDUCATION_KEYWORDS = [
 
 
 @lru_cache
-def _load_taxonomy() -> dict[str, list[str]]:
-    with open(TAXONOMY_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-@lru_cache
-def _flat_skill_list() -> list[str]:
-    taxonomy = _load_taxonomy()
-    skills: list[str] = []
-    for category_skills in taxonomy.values():
-        skills.extend(category_skills)
-    # de-dupe while preserving order
-    seen = set()
-    unique = []
-    for s in skills:
-        key = s.lower()
-        if key not in seen:
-            seen.add(key)
-            unique.append(s)
-    return unique
+def _load_taxonomy() -> dict[str, str]:
+    """
+    Returns {lowercased phrase: canonical skill name}, covering both each
+    skill's canonical name and all of its aliases — so "ReactJS" and
+    "React.js" both resolve to the single canonical skill "React" instead
+    of being treated as separate skills, which is an improvement over the
+    old static-JSON version where every alias was its own distinct entry.
+    """
+    db = SessionLocal()
+    try:
+        rows = db.query(Skill).all()
+        if not rows:
+            print(
+                "WARNING: skills table is empty — skill extraction will find "
+                "nothing until you run scripts/seed_skills.py",
+                file=sys.stderr,
+            )
+        phrase_to_canonical: dict[str, str] = {}
+        for row in rows:
+            phrase_to_canonical[row.canonical_name.lower()] = row.canonical_name
+            for alias in (row.aliases or []):
+                phrase_to_canonical[alias.lower()] = row.canonical_name
+        return phrase_to_canonical
+    finally:
+        db.close()
 
 
 @lru_cache
@@ -64,13 +73,22 @@ def _get_nlp():
 def _get_matcher() -> PhraseMatcher:
     nlp = _get_nlp()
     matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
-    patterns = [nlp.make_doc(skill) for skill in _flat_skill_list()]
+    patterns = [nlp.make_doc(phrase) for phrase in _load_taxonomy().keys()]
     matcher.add("SKILLS", patterns)
     return matcher
 
 
+def refresh_taxonomy_cache() -> None:
+    """
+    Call after adding/editing skills via the API so extraction picks up the
+    change without restarting the server. Wired to POST /api/skills/refresh.
+    """
+    _load_taxonomy.cache_clear()
+    _get_matcher.cache_clear()
+
+
 def extract_skills(text: str) -> list[str]:
-    """Returns the canonical (taxonomy-cased) skill names found in text."""
+    """Returns the canonical skill names found in text."""
     if not text.strip():
         return []
 
@@ -79,12 +97,12 @@ def extract_skills(text: str) -> list[str]:
     doc = nlp(text)
     matches = matcher(doc)
 
-    canonical_by_lower = {s.lower(): s for s in _flat_skill_list()}
+    phrase_to_canonical = _load_taxonomy()
     found = set()
     for _, start, end in matches:
         span_text = doc[start:end].text.lower()
-        if span_text in canonical_by_lower:
-            found.add(canonical_by_lower[span_text])
+        if span_text in phrase_to_canonical:
+            found.add(phrase_to_canonical[span_text])
 
     return sorted(found)
 

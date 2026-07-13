@@ -22,10 +22,29 @@ from app.nlp.skill_extractor import (
 )
 from app.parsers.docx_parser import parse_docx
 from app.parsers.pdf_parser import parse_pdf
-from app.schemas.schemas import ATSReportOut, CandidateOut
+from app.schemas.schemas import ATSReportOut, CandidateListItemOut, CandidateOut
 
 router = APIRouter(prefix="/api", tags=["resumes"])
 settings = get_settings()
+
+
+@router.get("/candidates", response_model=list[CandidateListItemOut])
+def list_candidates(db: Session = Depends(get_db)):
+    """
+    Lists every candidate stored in the backend, newest first, each with
+    their most recent ATS report nested inline. This is the endpoint the
+    frontend was missing — without it, the UI could only track candidates
+    uploaded in the current browser session via localStorage.
+    """
+    candidates = db.query(Candidate).order_by(Candidate.created_at.desc()).all()
+    results = []
+    for c in candidates:
+        latest_report = sorted(c.ats_reports, key=lambda r: r.created_at)[-1] if c.ats_reports else None
+        item = CandidateListItemOut.model_validate(c)
+        if latest_report:
+            item.ats_report = ATSReportOut.model_validate(latest_report)
+        results.append(item)
+    return results
 
 
 @router.post("/upload-resume", response_model=dict)

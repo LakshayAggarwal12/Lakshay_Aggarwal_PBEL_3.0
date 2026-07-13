@@ -30,6 +30,20 @@ class Settings(BaseSettings):
     def max_upload_size_bytes(self) -> int:
         return self.max_upload_size_mb * 1024 * 1024
 
+    @property
+    def normalized_database_url(self) -> str:
+        """
+        Managed Postgres providers (Render, Heroku, Supabase, etc.) commonly
+        hand out connection strings starting with 'postgres://', but
+        SQLAlchemy 1.4+/2.x requires 'postgresql://' — it raises on the old
+        scheme. Normalize here so pasting a provider's connection string
+        straight into .env just works without a manual edit.
+        """
+        url = self.database_url
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        return url
+
 
 @lru_cache
 def get_settings() -> Settings:

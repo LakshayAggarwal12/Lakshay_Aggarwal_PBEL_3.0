@@ -102,3 +102,69 @@ class ATSReport(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     candidate: Mapped["Candidate"] = relationship(back_populates="ats_reports")
+
+
+# ---------------------------------------------------------------------------
+# Skills taxonomy — this used to be a static JSON file (app/data/
+# skills_taxonomy.json) loaded into memory. It's now a real dataset living
+# in the database: a skill belongs to a category, can have alias spellings
+# ("React.js"/"ReactJS"/"React"), and can be associated with one or more
+# job fields with a relevance weight. This is what powers both skill
+# extraction (skill_extractor.py builds its matcher from this table) and
+# field detection (guessing whether a JD/resume is "Backend Development"
+# vs "Data Science" etc. from weighted skill overlap).
+# ---------------------------------------------------------------------------
+
+class SkillCategory(Base):
+    __tablename__ = "skill_categories"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+
+    skills: Mapped[list["Skill"]] = relationship(back_populates="category")
+
+
+class Skill(Base):
+    __tablename__ = "skills"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    canonical_name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    # Alternate spellings that should all resolve to canonical_name during
+    # extraction, e.g. ["ReactJS", "React.js"] for the skill "React".
+    aliases: Mapped[list] = mapped_column(JSON, default=list)
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("skill_categories.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    category: Mapped["SkillCategory | None"] = relationship(back_populates="skills")
+    field_relevance: Mapped[list["SkillFieldRelevance"]] = relationship(
+        back_populates="skill", cascade="all, delete-orphan"
+    )
+
+
+class JobField(Base):
+    __tablename__ = "job_fields"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    skill_relevance: Mapped[list["SkillFieldRelevance"]] = relationship(
+        back_populates="field", cascade="all, delete-orphan"
+    )
+
+
+class SkillFieldRelevance(Base):
+    """
+    Many-to-many between Skill and JobField, weighted by how core that
+    skill is to that field (0-1). E.g. "Python" might be 0.6 relevant to
+    Backend Development and 0.9 relevant to Data Science.
+    """
+    __tablename__ = "skill_field_relevance"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    skill_id: Mapped[int] = mapped_column(ForeignKey("skills.id"))
+    field_id: Mapped[int] = mapped_column(ForeignKey("job_fields.id"))
+    weight: Mapped[float] = mapped_column(Float, default=1.0)
+
+    skill: Mapped["Skill"] = relationship(back_populates="field_relevance")
+    field: Mapped["JobField"] = relationship(back_populates="skill_relevance")

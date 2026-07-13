@@ -40,6 +40,12 @@ def create_job_description(payload: JobDescriptionIn, db: Session = Depends(get_
     return jd
 
 
+@router.get("/job-descriptions", response_model=list[JobDescriptionOut])
+def list_job_descriptions(db: Session = Depends(get_db)):
+    """Lists every job description stored in the backend, newest first."""
+    return db.query(JobDescription).order_by(JobDescription.created_at.desc()).all()
+
+
 @router.get("/job-descriptions/{jd_id}", response_model=JobDescriptionOut)
 def get_job_description(jd_id: int, db: Session = Depends(get_db)):
     jd = db.get(JobDescription, jd_id)

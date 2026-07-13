@@ -1,14 +1,21 @@
 fastapi==0.115.0
 uvicorn[standard]==0.31.0
 sqlalchemy==2.0.35
+psycopg2-binary==2.9.10
 pydantic==2.9.2
 pydantic-settings==2.5.2
 python-multipart==0.0.12
 pdfplumber==0.11.4
 python-docx==1.1.2
-spacy==3.7.5
+
+# NLP
+numpy>=2.0
+spacy>=3.8.0
+thinc>=9.0.0
+blis>=1.0.0
 sentence-transformers==3.1.1
 scikit-learn==1.5.2
+
 python-dotenv==1.0.1
 
 # After installing requirements, run:

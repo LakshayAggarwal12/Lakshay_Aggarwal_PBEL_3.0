@@ -10,11 +10,16 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from app.config import get_settings
 
 settings = get_settings()
+db_url = settings.normalized_database_url
 
 # check_same_thread is only needed for SQLite; harmless to gate it like this
-connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
+connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
 
-engine = create_engine(settings.database_url, connect_args=connect_args)
+# pool_pre_ping matters for hosted Postgres specifically: managed providers
+# (Render free tier included) can silently drop idle connections, and
+# without this the first query after a period of inactivity fails with a
+# stale-connection error instead of transparently reconnecting.
+engine = create_engine(db_url, connect_args=connect_args, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
