@@ -61,7 +61,7 @@ function SidebarContent({ collapsed, onToggleCollapse, onNavigate, showCollapseC
         <div className="h-7 w-7 rounded-md bg-gradient-to-br from-accent to-accent-ink flex items-center justify-center shadow-sm shadow-accent/30 shrink-0">
           <LuTrophy className="h-4 w-4 text-white" />
         </div>
-        {!collapsed && <span className="font-display font-bold text-[15px] tracking-tight">Talence</span>}
+        {!collapsed && <span className="font-display font-bold text-[15px] tracking-tight">HireSense</span>}
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">
@@ -84,13 +84,13 @@ function SidebarContent({ collapsed, onToggleCollapse, onNavigate, showCollapseC
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-ink truncate">Recruiter session</p>
-              <p className="text-[11px] text-ink-soft truncate">Local — not synced</p>
+              <p className="text-[11px] text-ink-soft truncate">Local - not synced</p>
             </div>
           </div>
         )}
 
         <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between px-2"} pt-1`}>
-          {!collapsed && <p className="text-[10px] text-ink-soft/70">Talence v1.0 · Day 3</p>}
+          {!collapsed && <p className="text-[10px] text-ink-soft/70">HireSense v1.0 · Day 3</p>}
           {showCollapseControl && (
             <button
               onClick={onToggleCollapse}

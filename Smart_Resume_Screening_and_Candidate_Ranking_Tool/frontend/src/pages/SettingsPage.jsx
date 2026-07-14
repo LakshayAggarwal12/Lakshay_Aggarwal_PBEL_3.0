@@ -144,7 +144,7 @@ export default function SettingsPage() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-ink-soft">Product</span>
-              <span className="text-ink font-medium">Talence</span>
+              <span className="text-ink font-medium">HireSense</span>
             </div>
             <div className="flex justify-between">
               <span className="text-ink-soft">Version</span>

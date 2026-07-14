@@ -2,9 +2,9 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 
 const PreferencesContext = createContext(null);
 
-const THEME_KEY = "talence_theme"; // "light" | "dark" | "system"
-const ACCENT_KEY = "talence_accent";
-const MOTION_KEY = "talence_reduced_motion";
+const THEME_KEY = "HireSense_theme"; // "light" | "dark" | "system"
+const ACCENT_KEY = "HireSense_accent";
+const MOTION_KEY = "HireSense_reduced_motion";
 
 export const ACCENT_PRESETS = {
   cobalt: { label: "Cobalt", accent: "#3454d1", accentInk: "#1f3aa8", accentSoft: "#edf0fc" },

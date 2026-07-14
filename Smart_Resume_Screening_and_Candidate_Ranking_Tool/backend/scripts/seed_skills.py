@@ -11,9 +11,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.data.skills_seed import CATEGORIES, FIELDS, SKILLS
-from app.database import Base, SessionLocal, engine
-from app.models.models import JobField, Skill, SkillCategory, SkillFieldRelevance
+from Smart_Resme_Screening_and_Candidate_Ranking_Tool.backend.app.data.skills_seed import CATEGORIES, FIELDS, SKILLS
+from Smart_Resme_Screening_and_Candidate_Ranking_Tool.backend.app.database import Base, SessionLocal, engine
+from Smart_Resme_Screening_and_Candidate_Ranking_Tool.backend.app.models.models import JobField, Skill, SkillCategory, SkillFieldRelevance
 
 
 def seed():

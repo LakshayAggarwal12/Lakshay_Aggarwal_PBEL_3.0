@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 const SidebarUIContext = createContext(null);
-const COLLAPSE_KEY = "talence_sidebar_collapsed";
+const COLLAPSE_KEY = "HireSense_sidebar_collapsed";
 
 export function SidebarUIProvider({ children }) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === "true");

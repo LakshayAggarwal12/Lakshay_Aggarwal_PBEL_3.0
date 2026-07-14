@@ -1,4 +1,4 @@
-# Talence — Resume Screening Frontend
+# HireSense — Resume Screening Frontend
 
 React (Vite) + Tailwind CSS v4 dashboard for the Smart Resume Screening &
 Candidate Ranking backend (Day 1/2 FastAPI). Built against the actual 5
