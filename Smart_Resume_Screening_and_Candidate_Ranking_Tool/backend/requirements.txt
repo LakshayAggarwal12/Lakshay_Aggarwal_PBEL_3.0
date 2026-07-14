@@ -10,10 +10,15 @@ python-docx==1.1.2
 
 # NLP
 spacy>=3.8,<3.9
-sentence-transformers==3.1.1
 scikit-learn==1.5.2
 
 python-dotenv==1.0.1
 
 # After installation:
 # python -m spacy download en_core_web_sm
+
+# NOTE: sentence-transformers/torch were removed from this project.
+# Semantic matching now uses TF-IDF (scikit-learn) instead of transformer
+# embeddings — a deliberate memory tradeoff for free-tier hosting (Render's
+# 512MB limit). See the docstring at the top of app/nlp/matcher.py for the
+# full reasoning and what a torch-based upgrade path would look like later.

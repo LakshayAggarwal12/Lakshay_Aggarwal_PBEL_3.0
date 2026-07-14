@@ -2,57 +2,67 @@
 JD-matching engine.
 
 Combines two independent signals into one composite ranking score:
-  1. Semantic similarity  — does the resume's overall content *mean* the
-     same thing as the JD, even with different wording? (sentence embeddings)
+  1. Content similarity  — does the resume's overall content overlap with
+     the JD's vocabulary? (TF-IDF + cosine similarity)
   2. Skill overlap        — of the skills explicitly required by the JD,
      what % does this candidate actually have? (exact taxonomy match)
 
+NOTE ON APPROACH: this uses TF-IDF (term-frequency vocabulary matching) via
+scikit-learn rather than transformer sentence embeddings
+(sentence-transformers/torch). That's a deliberate memory tradeoff, not an
+oversight — torch's runtime memory footprint (400-600MB+) doesn't fit
+comfortably on free-tier hosting (e.g. Render's 512MB limit), and this
+avoids that entirely with no cost and no external API calls. The real
+tradeoff: TF-IDF matches on shared vocabulary, not meaning — it won't
+recognize that "built REST APIs" and "backend development experience" are
+related since they share almost no literal words. For resume-vs-JD
+matching specifically this is a softer loss than it sounds, since resumes
+and JDs both lean heavily on literal tech/skill terms, which is exactly
+what TF-IDF is good at. If memory constraints go away later (paid hosting,
+a bigger instance), swapping back to sentence-transformers is a
+self-contained change to compute_semantic_similarity() below — nothing
+else in this file or its callers needs to change, since the function
+signature and 0-100 output scale stay identical either way.
+
 Kept as two separate numbers (not just one blended score) because they
-answer different questions for the reader: semantic similarity tells you
+answer different questions for the reader: content similarity tells you
 "is this person's experience in the right domain," skill overlap tells you
 "do they tick the specific boxes." A resume can be high on one and low on
 the other, and that distinction is useful, not noise.
 """
-from functools import lru_cache
-
-import numpy as np
-from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from app.nlp.skill_extractor import extract_skills
 
-# Weights for the composite score. Semantic similarity weighted higher
-# because it captures relevant experience described in different words
-# (e.g. "built REST APIs" vs a JD asking for "backend development
-# experience") that exact skill-matching alone would miss.
-SEMANTIC_WEIGHT = 0.6
-SKILL_OVERLAP_WEIGHT = 0.4
-
-_MODEL_NAME = "all-MiniLM-L6-v2"
-
-
-@lru_cache
-def _get_model() -> SentenceTransformer:
-    # Loaded once per process — loading the embedding model is expensive
-    # (disk + memory), never do this per-request.
-    return SentenceTransformer(_MODEL_NAME)
-
-
-def _cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
-    denom = np.linalg.norm(vec_a) * np.linalg.norm(vec_b)
-    if denom == 0:
-        return 0.0
-    return float(np.dot(vec_a, vec_b) / denom)
+# Weights for the composite score. Skill overlap weighted higher than
+# content similarity here — with TF-IDF (vocabulary-based, not meaning-
+# based), exact skill matches are a more reliable signal than the general
+# content-overlap score.
+SEMANTIC_WEIGHT = 0.5
+SKILL_OVERLAP_WEIGHT = 0.5
 
 
 def compute_semantic_similarity(resume_text: str, jd_text: str) -> float:
-    """Returns a 0-100 score for how semantically similar the two texts are."""
-    model = _get_model()
-    embeddings = model.encode([resume_text, jd_text])
-    raw_similarity = _cosine_similarity(embeddings[0], embeddings[1])
-    # Cosine similarity for sentence embeddings is typically in the 0-1
-    # range for related text (rarely negative in practice for prose), so a
-    # direct *100 scale is reasonable here rather than a min-max remap.
-    return round(max(0.0, min(1.0, raw_similarity)) * 100, 1)
+    """
+    Returns a 0-100 score for how similar the two texts are, via TF-IDF +
+    cosine similarity. Named compute_semantic_similarity (not
+    compute_content_similarity) to keep the function signature/name stable
+    for every caller — only the internal implementation changed.
+    """
+    if not resume_text.strip() or not jd_text.strip():
+        return 0.0
+
+    vectorizer = TfidfVectorizer(stop_words="english", max_features=2000)
+    try:
+        tfidf_matrix = vectorizer.fit_transform([resume_text, jd_text])
+    except ValueError:
+        # Happens if, after stop-word removal, there's no vocabulary left
+        # in common (e.g. both texts are extremely short or all stop words)
+        return 0.0
+
+    raw_similarity = cosine_similarity(tfidf_matrix[0], tfidf_matrix[1])[0][0]
+    return round(max(0.0, min(1.0, float(raw_similarity))) * 100, 1)
 
 
 def compute_skill_overlap(candidate_skills: list[str], jd_skills: list[str]) -> dict:
