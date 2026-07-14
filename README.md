@@ -2,6 +2,8 @@
 
 **Live app:** [https://hiresense-sepia.vercel.app](https://hiresense-sepia.vercel.app)
 
+> **Note:** The backend is hosted on Render's free tier. The first request after a period of inactivity may take **30–60 seconds** due to cold starts. Subsequent requests will be significantly faster.
+
 HireSense parses resumes, scores them for ATS (Applicant Tracking System) parseability, and ranks candidates against a job description using a weighted combination of content similarity and exact skill matching — all backed by a real, queryable skills taxonomy dataset rather than hardcoded logic.
 
 ---
