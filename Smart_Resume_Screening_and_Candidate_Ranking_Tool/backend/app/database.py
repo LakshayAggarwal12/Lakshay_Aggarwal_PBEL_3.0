@@ -13,7 +13,10 @@ settings = get_settings()
 db_url = settings.normalized_database_url
 
 # check_same_thread is only needed for SQLite; harmless to gate it like this
-connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
+if db_url.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+else:
+    connect_args = {"sslmode": "require"}
 
 # pool_pre_ping matters for hosted Postgres specifically: managed providers
 # (Render free tier included) can silently drop idle connections, and
