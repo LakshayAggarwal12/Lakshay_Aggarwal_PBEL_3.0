@@ -24,6 +24,12 @@ HireSense parses resumes, scores them for ATS (Applicant Tracking System) parsea
 
 ---
 
+## 🎥 Demo Video
+
+[Watch the demo](docs/Demo-Video/HireSense-video.mp4)
+
+---
+
 ## Table of Contents
 
 - [Overview](#overview)
