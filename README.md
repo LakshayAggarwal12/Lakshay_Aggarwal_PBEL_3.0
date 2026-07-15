@@ -1,4 +1,4 @@
-# HireSense — AI-Powered Resume Screening & Candidate Ranking
+# HireSense - AI-Powered Resume Screening & Candidate Ranking
 
 **Live app:** [https://hiresense-sepia.vercel.app](https://hiresense-sepia.vercel.app)
 
@@ -26,7 +26,7 @@ HireSense parses resumes, scores them for ATS (Applicant Tracking System) parsea
 
 ## 🎥 Demo Video
 
-[Watch the demo](docs/Demo-Video/HireSense-video.mp4)
+[Watch the demo](https://drive.google.com/file/d/138u-kuod_MI4923DfCpfrt2P9a_50qiV/view?usp=sharing)
 
 ---
 
