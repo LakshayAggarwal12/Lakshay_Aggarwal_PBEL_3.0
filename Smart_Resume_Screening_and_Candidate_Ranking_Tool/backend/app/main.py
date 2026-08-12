@@ -11,12 +11,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.database import Base, engine
 from app.routes import skills
+from scripts.seed_skills import seed_if_empty
 
 settings = get_settings()
 
 # Day 1: create tables directly from models. Swap for Alembic migrations
 # before this touches a real production database.
 Base.metadata.create_all(bind=engine)
+
+seeded = seed_if_empty()
+if seeded:
+    print("Seeded skills taxonomy because the database started empty.")
 
 app = FastAPI(
     title="Smart Resume Screening & Candidate Ranking API",

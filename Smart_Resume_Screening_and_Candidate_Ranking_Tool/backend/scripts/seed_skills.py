@@ -11,9 +11,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from Smart_Resme_Screening_and_Candidate_Ranking_Tool.backend.app.data.skills_seed import CATEGORIES, FIELDS, SKILLS
-from Smart_Resme_Screening_and_Candidate_Ranking_Tool.backend.app.database import Base, SessionLocal, engine
-from Smart_Resme_Screening_and_Candidate_Ranking_Tool.backend.app.models.models import JobField, Skill, SkillCategory, SkillFieldRelevance
+from app.data.skills_seed import CATEGORIES, FIELDS, SKILLS
+from app.database import Base, SessionLocal, engine
+from app.models.models import JobField, Skill, SkillCategory, SkillFieldRelevance
 
 
 def seed():
@@ -78,6 +78,21 @@ def seed():
         print(f"{skill_count} new skill(s) added ({len(SKILLS)} total in seed file).")
         print(f"{relevance_count} new field-relevance mapping(s) added.")
         print("\nDone.")
+    finally:
+        db.close()
+
+
+def seed_if_empty() -> bool:
+    """Seed the taxonomy only when the skills table is empty."""
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+
+    try:
+        if db.query(Skill).first():
+            return False
+
+        seed()
+        return True
     finally:
         db.close()
 
